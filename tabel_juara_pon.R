@@ -31,6 +31,12 @@ daftar_juara <- daftar_juara %>%
       str_detect(prov_juara, "Jawa Barat") ~ "https://raw.githubusercontent.com/rizqrama/pekan_olahraga_nasional/master/supporting_files/logo_provinsi/jawa_barat.png",
       str_detect(prov_juara, "Jawa Timur") ~ "https://raw.githubusercontent.com/rizqrama/pekan_olahraga_nasional/master/supporting_files/logo_provinsi/jawa_timur.png",
       str_detect(prov_juara, "Jawa Tengah") ~ "https://raw.githubusercontent.com/rizqrama/pekan_olahraga_nasional/master/supporting_files/logo_provinsi/jawa_tengah.png"
+    ),
+    slogan = case_when(
+      str_detect(prov_juara, "DKI Jakarta") ~ "Jaya Raya",
+      str_detect(prov_juara, "Jawa Barat") ~ "Gemah Ripah Repeh Rapih",
+      str_detect(prov_juara, "Jawa Timur") ~ "Jer Basuki Mawa Beya",
+      str_detect(prov_juara, "Jawa Tengah") ~ "Prasetya Ulah Sakti Bhakti Praja"
     )
   )
 
@@ -41,6 +47,10 @@ daftar_juara %>%
     title = md("Daftar Juara Umum *Pekan Olahraga Nasional*")
   ) %>% 
   gtExtras::gt_theme_nytimes() %>% #memilih tema
+  gtExtras::gt_merge_stack(
+    col1 = prov_juara,
+    col2 = slogan
+  ) %>% 
   gtExtras::gt_img_rows( # menambahkan gambar pada tabel
     columns = juara,
     height = 20
@@ -120,7 +130,7 @@ medali_juara %>%
 
 # menggabungkan ketiga subset data ----
 juara_joined <- daftar_juara %>% 
-  select(3,1,2) %>% 
+  select(3,1,4,2) %>% 
   left_join(tren_juara, by = "prov_juara") %>% 
   left_join(medali_juara, by = "prov_juara")
 
@@ -128,6 +138,10 @@ juara_joined <- daftar_juara %>%
 
 vis_juara <- juara_joined %>% 
   gt() %>% # konversi menjadi gt_object()
+  gtExtras::gt_merge_stack(
+    col1 = prov_juara,
+    col2 = slogan
+  ) %>% 
   gtExtras::gt_img_rows( # menambahkan gambar pada tabel
     columns = juara,
     height = 40
@@ -141,9 +155,9 @@ vis_juara <- juara_joined %>%
   gtExtras::gt_plt_winloss(
     tren,
     max_wins = 20,
-    colors = c("#3587A4", "gray", "gray"),
+    colors = c("#16A75C", "gray", "gray"),
     type = "pill",
-    width = 28
+    width = 40
   ) %>% 
   tab_options(data_row.padding = px(2)) %>% 
   gt_plt_bar_stack( # membuat komparasi medali tiap provinsi
@@ -177,35 +191,25 @@ vis_juara <- juara_joined %>%
   ) %>% 
   tab_source_note( # membuat keterangan sumber data
     source_note = md(
-      "**Data:** Wikipedia - prokabar.com - bolabeten.com |**Tabel:** Insight Officer Jabar Digital Service" 
+      "**Data:** Wikipedia & prokabar.com | **Tabel:** Insight Officer Jabar Digital Service" 
     )
   ) %>% 
   tab_footnote( # membuat catatan kaki
     footnote = md(
-      "PON edisi ke 6 pada tahun 1965 dibatalkan karena adanya peristiwa G-30S-PKI. PON edisi ke 20 di Papua seharusnya diselenggkarakan pada tahun 2020, namun diundur karena adanya Pandemi Covid-19."
+      "Jawa Tengah menjadi juara PON edisi pertama dengan diwakili oleh Karesidenan Surakarta. PON edisi ke 6 pada tahun 1965 dibatalkan karena adanya peristiwa G-30S-PKI. Untuk edisi terbaru, yaitu PON ke 20 di Papua, yang seharusnya diselenggkarakan pada tahun 2020 diundur ke 2021 karena adanya Pandemi Covid-19."
     ),
     locations = cells_title(groups = "subtitle")
-  ) %>% 
-  tab_footnote(
-    md("Jawa Tengah menjadi juara PON edisi pertama dengan diwakili oleh Karesidenan Surakarta"),
-    locations = cells_body(
-      columns = prov_juara,
-      rows = 4
-    )
-  ) %>% 
-  ## mengubah style pada tabel (fonta, ukuran fonta, dan warna fonta)
-  # Title
-  tab_style(
+  ) %>%  ## mengubah style pada tabel (fonta, ukuran fonta, dan warna fonta)
+  tab_style(# Title
     style = list(
       cell_text(
-        font=google_font(name = "Kanit"), 
+        font=google_font(name = "Playfair Display"), 
         size = "xx-large",
         align = "left",
-        color='#4B4E6D')),
+        color='#006430')),
     locations = cells_title(groups = "title")
   )%>%
-  # Subtitle
-  tab_style(
+  tab_style(# Subtitle
     style = list(
       cell_text(
         font=google_font(name = "Roboto Condensed"), 
@@ -215,8 +219,7 @@ vis_juara <- juara_joined %>%
     ),
     locations = cells_title(groups = "subtitle")
   ) %>%
-  # Header
-  tab_style(
+  tab_style(# Header
     style = list(
       cell_text(
         font=google_font(name = "Roboto"), 
@@ -248,8 +251,7 @@ vis_juara <- juara_joined %>%
       columns = c(jumlah_medali)
     )
   )%>%
-  # Spanner
-  tab_style(
+  tab_style( # Spanner
     style = list(
       cell_text(
         font=google_font(name = "Roboto"), 
@@ -258,8 +260,7 @@ vis_juara <- juara_joined %>%
       )),
     locations = cells_column_spanners()
   ) %>%
-  # Body
-  tab_style(
+  tab_style( # Body
     style = list(
       cell_text(font=google_font(name = "Open Sans"),
                 align = 'left'
@@ -277,17 +278,15 @@ vis_juara <- juara_joined %>%
       columns = c(juara, tren)
     )
   )%>%
-  # Footnote
-  tab_style(
+  tab_style( # Footnote
     style = list(
       cell_text(
         font=google_font(name = "Roboto Condensed"),
         style = "italic",
-        size = "x-small")),
+        size = "small")),
     locations = cells_footnotes()
   ) %>%
-  # source note
-  tab_style(
+  tab_style( # source note
     style = list(
       cell_text(
         font=google_font(name = "Roboto Condensed"),
@@ -295,8 +294,7 @@ vis_juara <- juara_joined %>%
         size = "small")),
     locations = cells_source_notes()
   )%>%
-  # Borders
-  tab_options(
+  tab_options( # Borders
     table.border.top.style = "hidden",
     table.border.bottom.style = "hidden"
   )
